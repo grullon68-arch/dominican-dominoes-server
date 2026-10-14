@@ -97,18 +97,45 @@ function handleCreate(ws, name) {
   send(ws, { t: 'room', code, seat: 0, token, seats: publicSeats(room) });
 }
 
-function handleJoin(ws, code, name) {
+function handleJoin(ws, code, name, wantSeat) {
   code = String(code || '').toUpperCase().trim();
   const room = rooms.get(code);
   if (!room) return send(ws, { t: 'error', msg: 'No existe una mesa con ese código.' });
   if (room.phase !== 'lobby') return send(ws, { t: 'error', msg: 'La partida ya empezó.' });
-  const free = [0, 1, 2, 3].find(s => !room.seats[s]);
+  let free;
+  const s = parseInt(wantSeat, 10);
+  if (s >= 0 && s <= 3 && !room.seats[s]) {
+    free = s;
+  } else if (s >= 0 && s <= 3 && room.seats[s]) {
+    return send(ws, { t: 'error', msg: 'Ese asiento está ocupado. Elige otro.' });
+  } else {
+    free = [0, 1, 2, 3].find(s => !room.seats[s]);
+  }
   if (free === undefined) return send(ws, { t: 'error', msg: 'La mesa está llena.' });
   const token = makeToken();
   room.seats[free] = { name: cleanName(name), human: true, connected: true, ws, token, ai: false };
   ws._room = room; ws._seat = free;
   log(`"${room.seats[free].name}" joined room ${code} at seat ${free}`);
   send(ws, { t: 'room', code, seat: free, token, seats: publicSeats(room) });
+  broadcast(room, { t: 'seats', seats: publicSeats(room) });
+}
+
+function handleMove(ws, fromSeat, toSeat) {
+  const room = ws._room;
+  if (!room || room.phase !== 'lobby') return;
+  // Only the host (seat 0, the creator) can rearrange seats
+  if (ws._seat !== 0) return send(ws, { t: 'error', msg: 'Solo el creador puede mover asientos.' });
+  fromSeat = parseInt(fromSeat, 10); toSeat = parseInt(toSeat, 10);
+  if (!(fromSeat >= 0 && fromSeat <= 3 && toSeat >= 0 && toSeat <= 3)) return;
+  if (fromSeat === toSeat) return;
+  if (!room.seats[fromSeat] || room.seats[toSeat]) return send(ws, { t: 'error', msg: 'Movimiento inválido.' });
+  // Move the player
+  room.seats[toSeat] = room.seats[fromSeat];
+  room.seats[fromSeat] = null;
+  // Update the moved player's seat reference if they're connected
+  const moved = room.seats[toSeat];
+  if (moved.ws) moved.ws._seat = toSeat;
+  log(`room ${room.code}: host moved "${moved.name}" from seat ${fromSeat} to ${toSeat}`);
   broadcast(room, { t: 'seats', seats: publicSeats(room) });
 }
 
@@ -318,7 +345,7 @@ function serveStatic(req, res) {
   if (req.url === '/health') { res.writeHead(200); res.end('ok'); return; }
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
-  const file = path.join(__dirname, path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
+  const file = path.join(__dirname, 'client', path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); res.end('not found'); return; }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
@@ -337,8 +364,9 @@ function createServer(port = PORT) {
       try {
         switch (msg.t) {
           case 'create': handleCreate(ws, msg.name); break;
-          case 'join': handleJoin(ws, msg.code, msg.name); break;
+          case 'join': handleJoin(ws, msg.code, msg.name, msg.seat); break;
           case 'rejoin': handleRejoin(ws, msg.code, msg.token); break;
+          case 'move': handleMove(ws, msg.from, msg.to); break;
           case 'start': handleStart(ws); break;
           case 'play': onHumanPlay(ws, msg.tile, msg.end); break;
           case 'pass': onHumanPass(ws); break;
