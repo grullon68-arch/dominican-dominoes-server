@@ -81,10 +81,10 @@ function isAiDriven(room, s) {
 }
 
 /* ---------------- room flow ---------------- */
-function handleCreate(ws, name) {
+function handleCreate(ws, name, isPublic) {
   const code = makeCode();
   const room = {
-    code, phase: 'lobby',
+    code, phase: 'lobby', public: !!isPublic,
     seats: [null, null, null, null],
     scores: [0, 0], handNumber: 0, st: null, lastWinner: null,
     aiTimer: null, handTimer: null, rejoinTimers: new Map(),
@@ -93,8 +93,22 @@ function handleCreate(ws, name) {
   room.seats[0] = { name: cleanName(name), human: true, connected: true, ws, token, ai: false };
   ws._room = room; ws._seat = 0;
   rooms.set(code, room);
-  log(`room ${code} created by "${room.seats[0].name}"`);
+  log(`room ${code} created by "${room.seats[0].name}"${room.public ? ' (public)' : ''}`);
   send(ws, { t: 'room', code, seat: 0, token, seats: publicSeats(room) });
+}
+
+function handleList(ws) {
+  const list = [];
+  for (const [code, room] of rooms) {
+    if (room.public && room.phase === 'lobby') {
+      const free = [0, 1, 2, 3].filter(s => !room.seats[s]).length;
+      if (free > 0) {
+        const players = room.seats.filter(Boolean).map(s => s.name);
+        list.push({ code, players, free, host: room.seats[0] ? room.seats[0].name : '?' });
+      }
+    }
+  }
+  send(ws, { t: 'tables', tables: list });
 }
 
 function handleJoin(ws, code, name, wantSeat) {
@@ -363,7 +377,8 @@ function createServer(port = PORT) {
       try { msg = JSON.parse(raw); } catch { return send(ws, { t: 'error', msg: 'Mensaje inválido.' }); }
       try {
         switch (msg.t) {
-          case 'create': handleCreate(ws, msg.name); break;
+          case 'create': handleCreate(ws, msg.name, msg.public); break;
+          case 'list': handleList(ws); break;
           case 'join': handleJoin(ws, msg.code, msg.name, msg.seat); break;
           case 'rejoin': handleRejoin(ws, msg.code, msg.token); break;
           case 'move': handleMove(ws, msg.from, msg.to); break;
