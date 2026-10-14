@@ -18,10 +18,13 @@
         <input id="nameInput" maxlength="20" placeholder="Tu nombre" autocomplete="off">
       </label>
       <button id="btnCreate" class="btn gold">Crear mesa</button>
+      <label class="check-row"><input type="checkbox" id="publicCheck"> Mesa pública <span class="hint-inline">(aparece en Buscar mesa)</span></label>
       <div class="join-row">
         <input id="codeInput" maxlength="6" placeholder="CÓDIGO" autocomplete="off">
         <button id="btnJoin" class="btn">Unirse</button>
       </div>
+      <button id="btnFind" class="btn">Buscar mesa</button>
+      <div id="tableList"></div>
       <p id="lobbyError" class="error"></p>
       <p class="hint">Crea una mesa y comparte el código con tus amigos.<br>Los asientos vacíos los juega la computadora.</p>
     </div>

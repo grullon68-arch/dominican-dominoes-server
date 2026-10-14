@@ -41,6 +41,21 @@ body {
 .btn:active { transform: scale(.98); }
 .error { color: #ff9a8a; min-height: 20px; margin: 8px 0 0; font-size: 14px; }
 .hint { color: #a68e63; font-size: 13px; margin-top: 14px; line-height: 1.5; }
+/* ---------- find table ---------- */
+#tableList { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+#tableList .hint, #tableList .error { margin: 4px 0 0; }
+.table-row {
+  display: flex; align-items: center; gap: 10px;
+  background: #120b05; border: 1px solid #8a6a3b; border-radius: 8px;
+  padding: 8px 12px;
+}
+.table-row .t-label { flex: 1; text-align: left; font-size: 15px; }
+.table-row .t-seats { color: #cdb98f; font-size: 13px; margin-left: 8px; }
+.btn.small { width: auto; margin-top: 0; padding: 8px 18px; font-size: 15px; }
+.check-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 15px; cursor: pointer; }
+.check-row input { width: 18px; height: 18px; accent-color: #c9a227; }
+.hint-inline { color: #cdb98f; font-size: 13px; }
+
 #seatList { list-style: none; padding: 0; margin: 12px 0; text-align: left; }
 #seatList li { padding: 8px 10px; border-bottom: 1px solid #4a3826; display: flex; justify-content: space-between; }
 #seatList .cpu { color: #9db3c8; font-style: italic; }

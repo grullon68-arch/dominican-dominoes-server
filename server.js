@@ -3,7 +3,7 @@
  * server.js — Online multiplayer server for FichaFlow Dominican dominoes.
  *
  * One Node process:
- *   - serves the static client (client/) over HTTP,
+ *   - serves the static client (./) over HTTP,
  *   - runs the authoritative game over WebSocket (JSON messages),
  *   - holds rooms in memory (fine for friends & family; see README for limits).
  *
@@ -357,9 +357,24 @@ function onDisconnect(ws) {
 const MIME = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon' };
 function serveStatic(req, res) {
   if (req.url === '/health') { res.writeHead(200); res.end('ok'); return; }
+  if (req.url === '/tables') {
+    // Public table browser: open (lobby-phase) public mesas with a free seat.
+    const list = [];
+    for (const [code, room] of rooms) {
+      if (room.public && room.phase === 'lobby') {
+        const filled = room.seats.filter(Boolean).length;
+        if (filled < 4) {
+          list.push({ code, host: room.seats[0] ? room.seats[0].name : '?', filled });
+        }
+      }
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(list));
+    return;
+  }
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
-  const file = path.join(__dirname, 'client', path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
+  const file = path.join(__dirname, path.normalize(p).replace(/^(\.\.[/\\])+/, ''));
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); res.end('not found'); return; }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });

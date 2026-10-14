@@ -349,7 +349,8 @@ window.backToLobby = () => { hideModal(); showScreen('screen-lobby'); };
 $('btnCreate').onclick = () => {
   myName = $('nameInput').value.trim() || 'Jugador';
   $('lobbyError').textContent = '';
-  connect(() => send({ t: 'create', name: myName }));
+  const isPublic = !!$('publicCheck').checked;
+  connect(() => send({ t: 'create', name: myName, public: isPublic }));
 };
 $('btnJoin').onclick = () => {
   myName = $('nameInput').value.trim() || 'Jugador';
@@ -360,6 +361,44 @@ $('btnJoin').onclick = () => {
 };
 $('btnStart').onclick = () => send({ t: 'start' });
 $('btnPass').onclick = () => send({ t: 'pass' });
+
+// ---------- find table: join a public mesa without a code ----------
+$('btnFind').onclick = async () => {
+  const box = $('tableList');
+  box.innerHTML = '<p class="hint">Buscando mesas abiertas…</p>';
+  let tables = [];
+  try {
+    const res = await fetch('tables');
+    tables = await res.json();
+  } catch (e) {
+    box.innerHTML = '<p class="error">No se pudo buscar. Revisa tu conexión.</p>';
+    return;
+  }
+  box.innerHTML = '';
+  if (!tables.length) {
+    box.innerHTML = '<p class="hint">No hay mesas abiertas ahora mismo.<br>¡Crea una y comparte el código!</p>';
+    return;
+  }
+  tables.forEach(tb => {
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    const label = document.createElement('span');
+    label.className = 't-label';
+    label.innerHTML = `<b>${esc(tb.host)}</b><span class="t-seats">${tb.filled}/4</span>`;
+    const btn = document.createElement('button');
+    btn.className = 'btn small';
+    btn.textContent = 'Unirse';
+    btn.onclick = () => {
+      myName = $('nameInput').value.trim() || 'Jugador';
+      $('codeInput').value = tb.code;
+      $('lobbyError').textContent = '';
+      connect(() => send({ t: 'join', code: tb.code, name: myName }));
+    };
+    row.appendChild(label);
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+};
 
 // auto-rejoin if we have a saved session
 try {
