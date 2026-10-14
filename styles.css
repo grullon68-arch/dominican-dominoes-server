@@ -1,0 +1,138 @@
+/* Dominó Dominicano — Online client styles (no build step, plain CSS) */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #2a1a10 radial-gradient(ellipse at 50% 30%, #3d2716 0%, #241309 70%);
+  color: #f5ead6;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+#app { min-height: 100%; display: flex; flex-direction: column; }
+.hidden { display: none !important; }
+.screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+.card {
+  background: rgba(20, 12, 6, .92);
+  border: 2px solid #8a6a3b;
+  border-radius: 14px;
+  padding: 24px;
+  width: min(420px, 94vw);
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6);
+}
+.card h1 { margin: 0 0 4px; font-size: 30px; letter-spacing: 1px; }
+.card h2 { margin: 0 0 4px; }
+.sub { color: #cdb98f; margin: 0 0 16px; font-size: 14px; }
+.code { color: #ffd97a; letter-spacing: 4px; font-size: 26px; }
+.field { display: block; text-align: left; margin-bottom: 12px; font-size: 14px; color: #cdb98f; }
+.field input, .join-row input {
+  width: 100%; margin-top: 6px; padding: 12px; font-size: 17px;
+  border-radius: 8px; border: 1px solid #8a6a3b; background: #120b05; color: #fff;
+}
+.join-row { display: flex; gap: 8px; margin-top: 4px; }
+.join-row input { text-transform: uppercase; letter-spacing: 3px; text-align: center; }
+.btn {
+  display: block; width: 100%; margin-top: 12px; padding: 14px;
+  font-size: 18px; font-weight: 700; border: none; border-radius: 10px;
+  background: #5a4632; color: #fff; cursor: pointer;
+}
+.btn.gold { background: linear-gradient(#ffdf8a, #d9a83c); color: #3a2408; }
+.btn:active { transform: scale(.98); }
+.error { color: #ff9a8a; min-height: 20px; margin: 8px 0 0; font-size: 14px; }
+.hint { color: #a68e63; font-size: 13px; margin-top: 14px; line-height: 1.5; }
+#seatList { list-style: none; padding: 0; margin: 12px 0; text-align: left; }
+#seatList li { padding: 8px 10px; border-bottom: 1px solid #4a3826; display: flex; justify-content: space-between; }
+#seatList .cpu { color: #9db3c8; font-style: italic; }
+#seatList .empty { color: #6e5b41; }
+
+/* ---------- score bar ---------- */
+#screen-table { flex-direction: column; justify-content: flex-start; padding: 8px; gap: 6px; }
+#scorebar {
+  width: min(560px, 96vw); display: flex; justify-content: space-between; align-items: center;
+  background: rgba(20,12,6,.85); border: 1px solid #8a6a3b; border-radius: 10px; padding: 8px 14px;
+}
+#scorebar .team { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+#scorebar .team b { font-size: 22px; color: #ffd97a; }
+#scorebar .meta { font-size: 11px; color: #a68e63; letter-spacing: 2px; }
+
+/* ---------- table ---------- */
+#tableWrap { width: min(560px, 96vw); }
+#table {
+  position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 12px;
+  border: 10px solid #4a2f18;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.45), 0 8px 30px rgba(0,0,0,.5);
+  /* Dominican flag playing surface (simplified, no coat of arms) */
+  background:
+    linear-gradient(#ffffff,#ffffff) center/3.5% 100% no-repeat,
+    linear-gradient(#ffffff,#ffffff) center/100% 3.5% no-repeat,
+    linear-gradient(#002d62,#002d62) left top/50% 50% no-repeat,
+    linear-gradient(#ce1126,#ce1126) right top/50% 50% no-repeat,
+    linear-gradient(#ce1126,#ce1126) left bottom/50% 50% no-repeat,
+    linear-gradient(#002d62,#002d62) right bottom/50% 50% no-repeat;
+  overflow: hidden;
+}
+#chain { position: absolute; inset: 0; }
+
+/* seats around the table: you bottom, partner top, opponents left/right */
+.tseat { position: absolute; display: flex; align-items: center; gap: 6px; z-index: 5; }
+.tseat.bottom { bottom: 6px; left: 50%; transform: translateX(-50%); }
+.tseat.top { top: 6px; left: 50%; transform: translateX(-50%); }
+.tseat.left { left: 6px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.tseat.right { right: 6px; top: 50%; transform: translateY(-50%); flex-direction: column; }
+.tseat .avatar {
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; color: #fff; border: 2px solid rgba(255,255,255,.7);
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  /* REPLACE WITH EDDY'S ART: swap the initials div for <img src="avatars/rosa.png"> etc. */
+}
+.tseat .who { font-size: 12px; font-weight: 700; text-shadow: 0 1px 3px #000; white-space: nowrap; }
+.tseat .rack { display: flex; gap: 3px; }
+.tseat.left .rack, .tseat.right .rack { flex-direction: column; }
+.tseat.active .avatar { outline: 3px solid #ffd97a; }
+.mini { width: 16px; height: 32px; border-radius: 3px; background: #efe9dc; border: 1px solid #b9ad94; }
+.tseat.left .mini, .tseat.right .mini { width: 32px; height: 16px; }
+
+/* ---------- domino tiles ---------- */
+.tile {
+  position: absolute; background: #fbf7ee; border-radius: 6px;
+  border: 1px solid #c9bda3; box-shadow: 0 2px 5px rgba(0,0,0,.45);
+  display: flex; padding: 3px;
+}
+.tile.h { flex-direction: row; }
+.tile.v { flex-direction: column; }
+.tile .half { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+.tile .half + .half { border-left: 1px solid #d8cdb4; }
+.tile.v .half + .half { border-left: none; border-top: 1px solid #d8cdb4; }
+.pip { width: 70%; aspect-ratio: 1/1; border-radius: 50%; background: #22252c; place-self: center; }
+.pip.off { background: transparent; }
+
+/* end pieces glow when you may choose a side */
+.tile.endchoice { cursor: pointer; outline: 3px solid #ffd97a; animation: pulse 1s infinite; }
+@keyframes pulse { 50% { outline-color: #fff2c0; } }
+
+/* ---------- hand ---------- */
+#prompt { min-height: 22px; font-size: 15px; color: #ffd97a; text-align: center; font-weight: 600; }
+#hand { display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap; width: min(560px, 96vw); }
+#hand .tile { position: relative; cursor: pointer; }
+#hand .tile.legal { outline: 2px solid #7fd67f; }
+#hand .tile.legal:active { transform: scale(.95); }
+#hand .tile.selected { outline: 3px solid #ffd97a; transform: translateY(-8px); }
+#hand .tile:not(.legal) { opacity: .55; }
+#controls { width: min(560px, 96vw); display: flex; justify-content: center; }
+#controls .btn { width: auto; padding: 10px 34px; }
+
+/* ---------- modal / reconnect ---------- */
+#modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+#modalCard { max-height: 86vh; overflow-y: auto; }
+#modalCard h2 { margin-top: 0; }
+#modalCard .winner { color: #ffd97a; font-size: 20px; font-weight: 800; }
+#modalCard table { margin: 10px auto; border-collapse: collapse; font-size: 14px; }
+#modalCard td { padding: 3px 10px; border-bottom: 1px solid #4a3826; }
+#reconnect {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+  background: #a33; color: #fff; text-align: center; padding: 10px; font-weight: 700;
+}

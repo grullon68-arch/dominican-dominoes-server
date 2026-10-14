@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dominó Dominicano — Online</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ LOBBY ============ -->
+  <section id="screen-lobby" class="screen">
+    <div class="card">
+      <h1>Dominó Dominicano</h1>
+      <p class="sub">2 contra 2 · Reglas FichaFlow · Mesa a 200 puntos</p>
+      <label class="field">Tu nombre
+        <input id="nameInput" maxlength="20" placeholder="Tu nombre" autocomplete="off">
+      </label>
+      <button id="btnCreate" class="btn gold">Crear mesa</button>
+      <div class="join-row">
+        <input id="codeInput" maxlength="6" placeholder="CÓDIGO" autocomplete="off">
+        <button id="btnJoin" class="btn">Unirse</button>
+      </div>
+      <p id="lobbyError" class="error"></p>
+      <p class="hint">Crea una mesa y comparte el código con tus amigos.<br>Los asientos vacíos los juega la computadora.</p>
+    </div>
+  </section>
+
+  <!-- ============ ROOM / WAITING ============ -->
+  <section id="screen-room" class="screen hidden">
+    <div class="card">
+      <h2>Mesa <span id="roomCode" class="code"></span></h2>
+      <p class="sub">Comparte este código para que se unan</p>
+      <ul id="seatList"></ul>
+      <button id="btnStart" class="btn gold hidden">Empezar partida</button>
+      <p class="hint" id="roomHint">Esperando al creador…</p>
+      <p id="roomError" class="error"></p>
+    </div>
+  </section>
+
+  <!-- ============ TABLE ============ -->
+  <section id="screen-table" class="screen hidden">
+    <div id="scorebar">
+      <div class="team us"><span id="teamUsName">Nosotros</span><b id="scoreUs">0</b></div>
+      <div class="meta">META 200</div>
+      <div class="team them"><b id="scoreThem">0</b><span id="teamThemName">Ellos</span></div>
+    </div>
+    <div id="tableWrap">
+      <div id="table">
+        <div id="chain"></div>
+        <!-- seats are injected by app.js -->
+      </div>
+    </div>
+    <div id="prompt"></div>
+    <div id="hand"></div>
+    <div id="controls">
+      <button id="btnPass" class="btn hidden">Pasar</button>
+    </div>
+  </section>
+
+  <div id="modal" class="hidden"><div id="modalCard" class="card"></div></div>
+  <div id="reconnect" class="hidden">Conexión perdida… reintentando</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
